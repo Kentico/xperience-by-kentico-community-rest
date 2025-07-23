@@ -1,4 +1,4 @@
-﻿namespace Xperience.Community.Rest.Models
+﻿namespace Xperience.Community.Rest.Models.Responses
 {
     public class GetAllResponse
     {

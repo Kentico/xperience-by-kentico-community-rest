@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 using CMS;
 using CMS.DataEngine;
 
-using Xperience.Community.Rest.Models;
+using Xperience.Community.Rest.Models.Requests;
 using Xperience.Community.Rest.Services;
 
 [assembly: RegisterImplementation(typeof(IObjectMapper), typeof(ObjectMapper))]

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 using Xperience.Community.Rest.Attributes;
 using Xperience.Community.Rest.Models;
+using Xperience.Community.Rest.Models.Requests;
+using Xperience.Community.Rest.Models.Responses;
 using Xperience.Community.Rest.Services;
 
 namespace Xperience.Community.Rest.Controllers
@@ -17,17 +19,24 @@ namespace Xperience.Community.Rest.Controllers
     public class RestController(IObjectRetriever objectRetriever, IObjectMapper mapper) : ControllerBase
     {
         [HttpGet]
-        public IActionResult Index()
+        public ActionResult<IndexResponse> Index()
         {
-            var types = ObjectTypeManager.RegisteredTypes;
+            // TODO: Get enabled value from settings key or appsettings
+            bool enabled = true;
+            // TODO: Allow enabling/disabling of specific object types
+            var types = ObjectTypeManager.RegisteredTypes.Select(t => t.ObjectType);
 
-            return Ok(types.Select(t => t.ObjectType));
+            return Ok(new IndexResponse
+            {
+                Enabled = enabled,
+                EnabledObjectTypes = types
+            });
         }
 
 
         [HttpGet]
         [Route("{objectType}/all")]
-        public IActionResult Get(
+        public ActionResult<GetAllResponse> Get(
             string objectType,
             [FromQuery] string? where,
             [FromQuery] string? columns,

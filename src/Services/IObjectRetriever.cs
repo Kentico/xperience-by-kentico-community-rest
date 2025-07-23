@@ -3,6 +3,7 @@
 using CMS.DataEngine;
 
 using Xperience.Community.Rest.Models;
+using Xperience.Community.Rest.Models.Requests;
 
 namespace Xperience.Community.Rest.Services
 {

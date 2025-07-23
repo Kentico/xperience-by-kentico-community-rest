@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 
-namespace Xperience.Community.Rest.Models
+namespace Xperience.Community.Rest.Models.Requests
 {
     public class UpdateRequestBody : BaseRequestBody, IRequestBodyWithIdentifiers, IRequestBodyWithFields
     {
