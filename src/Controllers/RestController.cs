@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 
+using Xperience.Community.Rest.Attributes;
 using Xperience.Community.Rest.Models;
 using Xperience.Community.Rest.Services;
 
@@ -9,6 +10,7 @@ namespace Xperience.Community.Rest.Controllers
 {
     [ApiController]
     [Route("rest")]
+    [RestAutorization]
     public class RestController(IObjectRetriever objectRetriever, IObjectMapper mapper) : ControllerBase
     {
         [HttpGet]
