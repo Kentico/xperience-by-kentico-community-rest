@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<RootNamespace>Xperience.Community.Rest</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="CMS.AssemblyDiscoverableAttribute"></AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Kentico.Xperience.WebApp" />
+	<PackageReference Include="Kentico.Xperience.Admin" />
+  </ItemGroup>
+
+</Project>
