@@ -8,13 +8,7 @@ namespace Xperience.Community.Rest.Services
 {
     public interface IObjectRetriever
     {
-        public IEnumerable<DataRow> GetAll(
-            string objectType,
-            out int totalRecords,
-            string? where = null,
-            string? orderBy = null,
-            string? columns = null,
-            int? topN = null);
+        public IEnumerable<DataRow> GetAll(GetAllSettings settings, out int totalRecords);
 
 
         public BaseInfo? GetExistingObject<TBody>(TBody body) where TBody : BaseRequestBody, IRequestBodyWithIdentifiers;

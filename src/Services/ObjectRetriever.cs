@@ -11,39 +11,15 @@ namespace Xperience.Community.Rest.Services
 {
     public class ObjectRetriever : IObjectRetriever
     {
-        private const int TOPN = 50;
-
-
-        public IEnumerable<DataRow> GetAll(
-            string objectType,
-            out int totalRecords,
-            string? where = null,
-            string? orderBy = null,
-            string? columns = null,
-            int? topN = null)
+        public IEnumerable<DataRow> GetAll(GetAllSettings settings, out int totalRecords)
         {
-            GeneralizedInfo info = ModuleManager.GetObject(objectType);
-            if (!string.IsNullOrEmpty(orderBy) && orderBy.Equals("##default##", StringComparison.OrdinalIgnoreCase))
-            {
-                orderBy = info.DisplayNameColumn;
-            }
-
-            // If no order by was defined, set the default orderby
-            if (string.IsNullOrEmpty(orderBy))
-            {
-                orderBy = info.TypeInfo.DefaultOrderBy;
-            }
-
-            var query = info.GetDataQuery(true, parameters => parameters
-                .TopN(topN ?? TOPN)
-                .Where(where)
-                .OrderBy(orderBy)
-                .Columns(columns)
-            );
+            var query = GetQuery(settings);
+            DataSet result;
 
             // Use TransactionScope for security reasons when columns, where or orderby is defined
-            DataSet result;
-            bool useTransaction = !string.IsNullOrEmpty(where) && !string.IsNullOrEmpty(orderBy) && !string.IsNullOrEmpty(columns);
+            bool useTransaction = !string.IsNullOrEmpty(settings.Where) &&
+                !string.IsNullOrEmpty(query.OrderByColumns) &&
+                !string.IsNullOrEmpty(settings.Columns);
             using (useTransaction ? new CMSTransactionScope() : null)
             {
                 result = query.Result;
@@ -101,6 +77,45 @@ namespace Xperience.Community.Rest.Services
             var typeInfo = ObjectTypeManager.GetTypeInfo(objectType, true);
 
             return typeInfo.ProviderObject.GetInfoByGuid(guid);
+        }
+
+
+        private static IDataQuery GetQuery(GetAllSettings settings)
+        {
+            GeneralizedInfo info = ModuleManager.GetObject(settings.ObjectType);
+            string? orderBy = settings.OrderBy;
+            if (!string.IsNullOrEmpty(orderBy) && orderBy.Equals("##default##", StringComparison.OrdinalIgnoreCase))
+            {
+                orderBy = info.DisplayNameColumn;
+            }
+
+            // If no order by was defined, set the default orderby
+            if (string.IsNullOrEmpty(orderBy))
+            {
+                orderBy = info.TypeInfo.DefaultOrderBy;
+            }
+
+            int topN = settings.IsPagedQuery ? 0 : settings.TopN ?? 0;
+            var query = info.GetDataQuery(true, parameters =>
+            {
+                parameters
+                    .TopN(topN)
+                    .Where(settings.Where)
+                    .OrderBy(orderBy)
+                    .Columns(settings.Columns);
+
+                if (settings.IsPagedQuery)
+                {
+                    parameters.Page(settings.Page ?? 0, settings.PageSize ?? 0);
+                }
+            });
+
+            if (settings.IsPagedQuery)
+            {
+                query.GetTotalRecordsForPagedQuery = true;
+            }
+
+            return query;
         }
     }
 }

@@ -1,5 +1,8 @@
-﻿using CMS.DataEngine;
+﻿using System.Web;
 
+using CMS.DataEngine;
+
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 using Xperience.Community.Rest.Attributes;
@@ -14,19 +17,60 @@ namespace Xperience.Community.Rest.Controllers
     public class RestController(IObjectRetriever objectRetriever, IObjectMapper mapper) : ControllerBase
     {
         [HttpGet]
+        public IActionResult Index()
+        {
+            var types = ObjectTypeManager.RegisteredTypes;
+
+            return Ok(types.Select(t => t.ObjectType));
+        }
+
+
+        [HttpGet]
         [Route("{objectType}/all")]
         public IActionResult Get(
             string objectType,
             [FromQuery] string? where,
             [FromQuery] string? columns,
             [FromQuery] string? orderBy,
-            [FromQuery] int? topN)
+            [FromQuery] int? topN,
+            [FromQuery] int? pageSize,
+            [FromQuery] int? page)
         {
             ValidateTypeOrThrow(objectType);
-            var rows = objectRetriever.GetAll(objectType, out int totalRecords, where, orderBy, columns, topN);
+            var settings = new GetAllSettings
+            {
+                ObjectType = objectType,
+                Columns = columns,
+                OrderBy = orderBy,
+                Where = where,
+                TopN = topN,
+                PageSize = pageSize,
+                Page = page
+            };
+            var rows = objectRetriever.GetAll(settings, out int totalRecords);
             var objs = rows.Select(mapper.MapToSimpleObject);
+            var response = new GetAllResponse
+            {
+                TotalRecords = totalRecords,
+                Objects = objs
+            };
 
-            return Ok(new GetAllResponse { TotalRecords = totalRecords, Objects = objs });
+            // If paging and there are more records available, set next URL
+            int? seenRecords = (pageSize * page) + pageSize;
+            bool hasMoreRecords = settings.IsPagedQuery && seenRecords is not null && totalRecords > seenRecords;
+            if (hasMoreRecords)
+            {
+                string url = Request.GetDisplayUrl();
+                var uriBuilder = new UriBuilder(url);
+                var query = HttpUtility.ParseQueryString(uriBuilder.Query) ??
+                    throw new InvalidOperationException("Unable to parse query string.");
+                query[nameof(page)] = (page + 1).ToString();
+                uriBuilder.Query = query.ToString();
+
+                response.NextUrl = uriBuilder.ToString();
+            }
+
+            return Ok(response);
         }
 
 
