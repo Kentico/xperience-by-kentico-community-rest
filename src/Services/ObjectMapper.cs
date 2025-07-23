@@ -1,4 +1,5 @@
-﻿using System.Dynamic;
+﻿using System.Data;
+using System.Dynamic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -34,6 +35,25 @@ namespace Xperience.Community.Rest.Services
             foreach (string column in infoObject.ColumnNames)
             {
                 ((IDictionary<string, object?>)obj).Add(column, infoObject.GetValue(column));
+            }
+
+            return obj;
+        }
+
+
+        public dynamic MapToSimpleObject(DataRow row)
+        {
+            var obj = new ExpandoObject();
+            var columns = row.Table.Columns.OfType<DataColumn>().Select(c => c.ColumnName);
+            foreach (string column in columns)
+            {
+                object? value = row[column];
+                if (value.GetType().Equals(typeof(DBNull)))
+                {
+                    value = null;
+                }
+
+                ((IDictionary<string, object?>)obj).Add(column, value);
             }
 
             return obj;

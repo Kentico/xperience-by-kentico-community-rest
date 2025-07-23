@@ -14,6 +14,23 @@ namespace Xperience.Community.Rest.Controllers
     public class RestController(IObjectRetriever objectRetriever, IObjectMapper mapper) : ControllerBase
     {
         [HttpGet]
+        [Route("{objectType}/all")]
+        public IActionResult Get(
+            string objectType,
+            [FromQuery] string? where,
+            [FromQuery] string? columns,
+            [FromQuery] string? orderBy,
+            [FromQuery] int? topN)
+        {
+            ValidateTypeOrThrow(objectType);
+            var rows = objectRetriever.GetAll(objectType, out int totalRecords, where, orderBy, columns, topN);
+            var objs = rows.Select(mapper.MapToSimpleObject);
+
+            return Ok(new GetAllResponse { TotalRecords = totalRecords, Objects = objs });
+        }
+
+
+        [HttpGet]
         [Route("{objectType}/{id:int}")]
         public IActionResult Get(string objectType, int id)
         {

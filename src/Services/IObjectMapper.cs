@@ -1,4 +1,6 @@
-﻿using CMS.DataEngine;
+﻿using System.Data;
+
+using CMS.DataEngine;
 
 using Xperience.Community.Rest.Models;
 
@@ -10,5 +12,8 @@ namespace Xperience.Community.Rest.Services
 
 
         public dynamic MapToSimpleObject(BaseInfo infoObject);
+
+
+        public dynamic MapToSimpleObject(DataRow row);
     }
 }
