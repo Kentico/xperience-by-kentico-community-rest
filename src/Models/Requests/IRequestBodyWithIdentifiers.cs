@@ -11,7 +11,7 @@ namespace Xperience.Community.Rest.Models.Requests
         /// <summary>
         /// The ID of the object.
         /// </summary>
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
 
         /// <summary>
@@ -23,6 +23,6 @@ namespace Xperience.Community.Rest.Models.Requests
         /// <summary>
         /// The GUID of the object.
         /// </summary>
-        public Guid Guid { get; set; }
+        public Guid? Guid { get; set; }
     }
 }

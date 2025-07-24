@@ -46,14 +46,14 @@ namespace Xperience.Community.Rest.Services
                 return GetByCodeName(body.ObjectType, body.CodeName);
             }
 
-            if (!body.Guid.Equals(Guid.Empty))
+            if (body.Guid is not null && !body.Guid.Equals(Guid.Empty))
             {
-                return GetByGuid(body.ObjectType, body.Guid);
+                return GetByGuid(body.ObjectType, (Guid)body.Guid);
             }
 
             if (body.Id > 0)
             {
-                return GetById(body.ObjectType, body.Id);
+                return GetById(body.ObjectType, (int)body.Id);
             }
 
             throw new InvalidOperationException("No identifier provided.");
