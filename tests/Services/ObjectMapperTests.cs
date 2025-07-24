@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Text.Json.Nodes;
 
 using CMS.ContactManagement;
 using CMS.Tests;
@@ -11,13 +10,8 @@ namespace Xperience.Community.Rest.Services
     internal class ObjectMapperTests : UnitTests
     {
         private readonly ObjectMapper mapper = new();
-        private const string CONTACT_EMAIL = "test@localhost.com";
         private const string CONTACT_FIRSTNAME = "Tester";
-        private readonly JsonObject fields = new()
-        {
-            { nameof(ContactInfo.ContactEmail), CONTACT_EMAIL },
-            { nameof(ContactInfo.ContactFirstName), CONTACT_FIRSTNAME },
-        };
+        private const string CONTACT_EMAIL = "test@localhost.com";
 
 
         [SetUp]
@@ -30,8 +24,12 @@ namespace Xperience.Community.Rest.Services
             var infoObject = new ContactInfo();
             var requestBody = new CreateRequestBody
             {
-                ObjectType = "om.contact",
-                Fields = fields
+                ObjectType = infoObject.TypeInfo.ObjectType,
+                Fields = new()
+                {
+                    { nameof(ContactInfo.ContactEmail), CONTACT_EMAIL },
+                    { nameof(ContactInfo.ContactFirstName), CONTACT_FIRSTNAME },
+                }
             };
 
             mapper.MapFieldsFromRequest(infoObject, requestBody);
