@@ -1,6 +1,8 @@
 ﻿using System.Web;
 
+using CMS.Core;
 using CMS.DataEngine;
+using CMS.Helpers;
 
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -16,20 +18,35 @@ namespace Xperience.Community.Rest.Controllers
     [ApiController]
     [Route("rest")]
     [RestAutorization]
-    public class RestController(IObjectRetriever objectRetriever, IObjectMapper mapper) : ControllerBase
+    public class RestController(IObjectRetriever objectRetriever, IObjectMapper mapper, ISettingsService settingsService) : ControllerBase
     {
+        private bool IsEnabled => ValidationHelper.GetBoolean(settingsService[Constants.SETTINGS_KEY_ENABLED], false);
+
+
+        private IEnumerable<string> EnabledTypes
+        {
+            get
+            {
+                string? types = settingsService[Constants.SETTINGS_KEY_ALLOWEDTYPES];
+                if (string.IsNullOrEmpty(types))
+                {
+                    return [];
+                }
+
+                return types.ToLower().Split(';');
+            }
+        }
+
+
         [HttpGet]
         public ActionResult<IndexResponse> Index()
         {
-            // TODO: Get enabled value from settings key or appsettings
-            bool enabled = true;
-            // TODO: Allow enabling/disabling of specific object types
-            var types = ObjectTypeManager.RegisteredTypes.Select(t => t.ObjectType);
+            var registeredTypes = ObjectTypeManager.RegisteredTypes.Select(t => t.ObjectType.ToLower());
 
             return Ok(new IndexResponse
             {
-                Enabled = enabled,
-                EnabledObjectTypes = types
+                Enabled = IsEnabled,
+                EnabledObjectTypes = registeredTypes.Intersect(EnabledTypes)
             });
         }
 
@@ -45,7 +62,7 @@ namespace Xperience.Community.Rest.Controllers
             [FromQuery] int? pageSize,
             [FromQuery] int? page)
         {
-            ValidateTypeOrThrow(objectType);
+            ValidateRequestOrThrow(objectType);
             var settings = new GetAllSettings
             {
                 ObjectType = objectType,
@@ -87,7 +104,7 @@ namespace Xperience.Community.Rest.Controllers
         [Route("{objectType}/{id:int}")]
         public IActionResult Get(string objectType, int id)
         {
-            ValidateTypeOrThrow(objectType);
+            ValidateRequestOrThrow(objectType);
             var obj = objectRetriever.GetById(objectType, id);
             if (obj is null)
             {
@@ -102,7 +119,7 @@ namespace Xperience.Community.Rest.Controllers
         [Route("{objectType}/{codeName}")]
         public IActionResult Get(string objectType, string codeName)
         {
-            ValidateTypeOrThrow(objectType);
+            ValidateRequestOrThrow(objectType);
             var obj = objectRetriever.GetByCodeName(objectType, codeName);
             if (obj is null)
             {
@@ -117,7 +134,7 @@ namespace Xperience.Community.Rest.Controllers
         [Route("{objectType}/{guid:guid}")]
         public IActionResult Get(string objectType, Guid guid)
         {
-            ValidateTypeOrThrow(objectType);
+            ValidateRequestOrThrow(objectType);
             var obj = objectRetriever.GetByGuid(objectType, guid);
             if (obj is null)
             {
@@ -131,7 +148,7 @@ namespace Xperience.Community.Rest.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] CreateRequestBody body)
         {
-            ValidateTypeOrThrow(body.ObjectType);
+            ValidateRequestOrThrow(body.ObjectType);
             var newObject = ModuleManager.GetObject(body.ObjectType, true);
             mapper.MapFieldsFromRequest(newObject, body);
             newObject.Insert();
@@ -143,7 +160,7 @@ namespace Xperience.Community.Rest.Controllers
         [HttpPatch]
         public IActionResult Patch([FromBody] UpdateRequestBody body)
         {
-            ValidateTypeOrThrow(body.ObjectType);
+            ValidateRequestOrThrow(body.ObjectType);
             var existingObject = objectRetriever.GetExistingObject(body);
             if (existingObject is null)
             {
@@ -160,7 +177,7 @@ namespace Xperience.Community.Rest.Controllers
         [HttpDelete]
         public IActionResult Delete([FromBody] DeleteRequestBody model)
         {
-            ValidateTypeOrThrow(model.ObjectType);
+            ValidateRequestOrThrow(model.ObjectType);
             var existingObject = objectRetriever.GetExistingObject(model);
             if (existingObject is null)
             {
@@ -173,7 +190,24 @@ namespace Xperience.Community.Rest.Controllers
         }
 
 
-        private static void ValidateTypeOrThrow(string objectType) => _ = ObjectTypeManager.GetTypeInfo(objectType) ??
-            throw new InvalidOperationException($"Object type '{objectType}' not registered.");
+        private void ValidateRequestOrThrow(string objectType)
+        {
+            if (!IsEnabled)
+            {
+                throw new InvalidOperationException("REST service disabled.");
+            }
+
+            string normalizedObjectType = objectType.ToLower();
+
+            // Ensure type is registered
+            _ = ObjectTypeManager.GetTypeInfo(normalizedObjectType) ??
+                throw new InvalidOperationException($"Object type '{normalizedObjectType}' not registered.");
+
+            // Ensure type is allowed in settings
+            if (EnabledTypes.Any() && !EnabledTypes.Contains(normalizedObjectType))
+            {
+                throw new InvalidOperationException($"Object type '{normalizedObjectType}' not enabled by REST service.");
+            }
+        }
     }
 }
