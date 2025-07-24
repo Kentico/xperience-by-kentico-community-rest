@@ -23,6 +23,9 @@ namespace Xperience.Community.Rest.Controllers
         private bool IsEnabled => ValidationHelper.GetBoolean(settingsService[Constants.SETTINGS_KEY_ENABLED], false);
 
 
+        private static IEnumerable<string> RegisteredTypes => ObjectTypeManager.RegisteredTypes.Select(t => t.ObjectType.ToLower());
+
+
         private IEnumerable<string> EnabledTypes
         {
             get
@@ -30,7 +33,7 @@ namespace Xperience.Community.Rest.Controllers
                 string? types = settingsService[Constants.SETTINGS_KEY_ALLOWEDTYPES];
                 if (string.IsNullOrEmpty(types))
                 {
-                    return [];
+                    return RegisteredTypes;
                 }
 
                 return types.ToLower().Split(';');
@@ -39,16 +42,12 @@ namespace Xperience.Community.Rest.Controllers
 
 
         [HttpGet]
-        public ActionResult<IndexResponse> Index()
-        {
-            var registeredTypes = ObjectTypeManager.RegisteredTypes.Select(t => t.ObjectType.ToLower());
-
-            return Ok(new IndexResponse
+        public ActionResult<IndexResponse> Index() =>
+            Ok(new IndexResponse
             {
                 Enabled = IsEnabled,
-                EnabledObjectTypes = registeredTypes.Intersect(EnabledTypes)
+                EnabledObjectTypes = RegisteredTypes.Intersect(EnabledTypes)
             });
-        }
 
 
         [HttpGet]
@@ -204,7 +203,7 @@ namespace Xperience.Community.Rest.Controllers
                 throw new InvalidOperationException($"Object type '{normalizedObjectType}' not registered.");
 
             // Ensure type is allowed in settings
-            if (EnabledTypes.Any() && !EnabledTypes.Contains(normalizedObjectType))
+            if (!EnabledTypes.Contains(normalizedObjectType))
             {
                 throw new InvalidOperationException($"Object type '{normalizedObjectType}' not enabled by REST service.");
             }
