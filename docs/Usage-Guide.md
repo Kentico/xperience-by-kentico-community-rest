@@ -48,6 +48,8 @@ Sample payload:
 }
 ```
 
+The response of this request contains the full representation of the created object.
+
 ### Updating an object
 
 To update an object, send a PATCH request to `/rest` and provide the data found in [UpdateRequestBody](/src/Models/Requests/UpdateRequestBody.cs):
@@ -72,6 +74,8 @@ Sample payload:
 }
 ```
 
+The response of this request contains the full representation of the updated object.
+
 ### Deleting an object
 
 To delete an object, send a DELETE request to `/rest` and provide the data found in [DeleteRequestBody](/src/Models/Requests/DeleteRequestBody.cs):
@@ -90,6 +94,8 @@ Sample payload:
   "CodeName": "andy"
 }
 ```
+
+The response of this request contains the full representation of the deleted object.
 
 ### Getting a single object
 
