@@ -185,7 +185,7 @@ Sample request and response:
 // http://localhost/rest/cms.webpageurlpath/all?page=2&pagesize=5&columns=WebPageUrlPath
 {
   "totalRecords": 110,
-  "nextUrl": "http://localhost:5261/rest/cms.webpageurlpath/all?page=3&pagesize=5&columns=WebPageUrlPath",
+  "nextUrl": "http://localhost/rest/cms.webpageurlpath/all?page=3&pagesize=5&columns=WebPageUrlPath",
   "objects": [
     {
       "WebPageUrlPath": "Articles/Origins-of-Arabica-Bourbon",
