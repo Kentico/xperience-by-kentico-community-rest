@@ -15,17 +15,29 @@ using Xperience.Community.Rest.Services;
 
 namespace Xperience.Community.Rest.Controllers
 {
+    /// <summary>
+    /// The REST controller providing data retrieval and manipulation.
+    /// </summary>
     [ApiController]
     [Route("rest")]
-    [RestAutorization]
+    [RestAuthentication]
     public class RestController(IObjectRetriever objectRetriever, IObjectMapper mapper, ISettingsService settingsService) : ControllerBase
     {
+        /// <summary>
+        /// If <c>true</c>, the REST service is enabled.
+        /// </summary>
         private bool IsEnabled => ValidationHelper.GetBoolean(settingsService[Constants.SETTINGS_KEY_ENABLED], false);
 
 
+        /// <summary>
+        /// A list of object types registered in Xperience by Kentico, lowercased.
+        /// </summary>
         private static IEnumerable<string> RegisteredTypes => ObjectTypeManager.RegisteredTypes.Select(t => t.ObjectType.ToLower());
 
 
+        /// <summary>
+        /// A list of objects allowed to be managed by the REST service, lowercased.
+        /// </summary>
         private IEnumerable<string> EnabledTypes
         {
             get
@@ -41,6 +53,9 @@ namespace Xperience.Community.Rest.Controllers
         }
 
 
+        /// <summary>
+        /// An action at the base path which provides information about the REST service's configuration.
+        /// </summary>
         [HttpGet]
         public ActionResult<IndexResponse> Index() =>
             Ok(new IndexResponse
@@ -50,6 +65,17 @@ namespace Xperience.Community.Rest.Controllers
             });
 
 
+        /// <summary>
+        /// An action which returns multiple objects and supports pagination.
+        /// </summary>
+        /// <param name="objectType">The object type to retrieve.</param>
+        /// <param name="where">A SQL WHERE condition to restrict the returned objects.</param>
+        /// <param name="columns">Column names of the object type to include in the returned objects.</param>
+        /// <param name="orderBy">The column name to order the objects by. May include "asc" or "desc."</param>
+        /// <param name="topN">The maximum number of objects returned.</param>
+        /// <param name="pageSize">For pagination, indicates the number of objects in each page.</param>
+        /// <param name="page">For pagination, indicates the page to retrieve objects from, where 0 is the first page.</param>
+        /// <exception cref="InvalidOperationException"></exception>
         [HttpGet]
         [Route("{objectType}/all")]
         public ActionResult<GetAllResponse> Get(
@@ -99,6 +125,11 @@ namespace Xperience.Community.Rest.Controllers
         }
 
 
+        /// <summary>
+        /// An action which returns a single object identified by its primary key.
+        /// </summary>
+        /// <param name="objectType">The object type to retrieve.</param>
+        /// <param name="id">The primary key of the desired object.</param>
         [HttpGet]
         [Route("{objectType}/{id:int}")]
         public IActionResult Get(string objectType, int id)
@@ -114,6 +145,11 @@ namespace Xperience.Community.Rest.Controllers
         }
 
 
+        /// <summary>
+        /// An action which returns a single object identified by its code name.
+        /// </summary>
+        /// <param name="objectType">The object type to retrieve.</param>
+        /// <param name="codeName">The code name of the desired object.</param>
         [HttpGet]
         [Route("{objectType}/{codeName}")]
         public IActionResult Get(string objectType, string codeName)
@@ -129,6 +165,11 @@ namespace Xperience.Community.Rest.Controllers
         }
 
 
+        /// <summary>
+        /// An action which returns a single object identified by its GUID.
+        /// </summary>
+        /// <param name="objectType">The object type to retrieve.</param>
+        /// <param name="guid">The GUID of the desired object.</param>
         [HttpGet]
         [Route("{objectType}/{guid:guid}")]
         public IActionResult Get(string objectType, Guid guid)
@@ -144,6 +185,10 @@ namespace Xperience.Community.Rest.Controllers
         }
 
 
+        /// <summary>
+        /// An action which creates a new object.
+        /// </summary>
+        /// <param name="body">A model containing the object type and field values of the new object.</param>
         [HttpPost]
         public IActionResult Post([FromBody] CreateRequestBody body)
         {
@@ -156,6 +201,11 @@ namespace Xperience.Community.Rest.Controllers
         }
 
 
+        /// <summary>
+        /// An action which partially updates an existing object.
+        /// </summary>
+        /// <param name="body">A model containing the object type and field values of the new object. Also contains multiple properties
+        /// which can be used to identify the existing object.</param>
         [HttpPatch]
         public IActionResult Patch([FromBody] UpdateRequestBody body)
         {
@@ -173,11 +223,15 @@ namespace Xperience.Community.Rest.Controllers
         }
 
 
+        /// <summary>
+        /// An action which deletes an existing object.
+        /// </summary>
+        /// <param name="body">A model which contains the object type and identifier of the existing object.</param>
         [HttpDelete]
-        public IActionResult Delete([FromBody] DeleteRequestBody model)
+        public IActionResult Delete([FromBody] DeleteRequestBody body)
         {
-            ValidateRequestOrThrow(model.ObjectType);
-            var existingObject = objectRetriever.GetExistingObject(model);
+            ValidateRequestOrThrow(body.ObjectType);
+            var existingObject = objectRetriever.GetExistingObject(body);
             if (existingObject is null)
             {
                 return NotFound();
@@ -189,6 +243,11 @@ namespace Xperience.Community.Rest.Controllers
         }
 
 
+        /// <summary>
+        /// Validates that the request may proceed based on the provided <paramref name="objectType"/> and the REST configuration.
+        /// </summary>
+        /// <param name="objectType">The object type provided in the request body.</param>
+        /// <exception cref="InvalidOperationException"></exception>
         private void ValidateRequestOrThrow(string objectType)
         {
             if (!IsEnabled)

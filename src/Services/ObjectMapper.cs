@@ -12,6 +12,9 @@ using Xperience.Community.Rest.Services;
 [assembly: RegisterImplementation(typeof(IObjectMapper), typeof(ObjectMapper))]
 namespace Xperience.Community.Rest.Services
 {
+    /// <summary>
+    /// Default implementation of <see cref="IObjectMapper"/>.
+    /// </summary>
     public class ObjectMapper : IObjectMapper
     {
         public void MapFieldsFromRequest<TBody>(BaseInfo infoObject, TBody body) where TBody : IRequestBodyWithFields

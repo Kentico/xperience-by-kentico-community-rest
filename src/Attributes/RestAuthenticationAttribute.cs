@@ -9,8 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Xperience.Community.Rest.Attributes
 {
+    /// <summary>
+    /// Performs Basic authentication and returns a <see cref="UnauthorizedResult"/> if header is missing or invalid.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class RestAutorizationAttribute : Attribute, IAsyncAuthorizationFilter
+    public class RestAuthenticationAttribute : Attribute, IAsyncAuthorizationFilter
     {
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {

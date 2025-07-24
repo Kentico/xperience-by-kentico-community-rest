@@ -10,6 +10,9 @@ using Xperience.Community.Rest.Services;
 [assembly: RegisterImplementation(typeof(IObjectRetriever), typeof(ObjectRetriever))]
 namespace Xperience.Community.Rest.Services
 {
+    /// <summary>
+    /// Default implementation of <see cref="IObjectRetriever"/>.
+    /// </summary>
     public class ObjectRetriever : IObjectRetriever
     {
         public IEnumerable<DataRow> GetAll(GetAllSettings settings, out int totalRecords)

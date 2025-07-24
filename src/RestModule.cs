@@ -11,6 +11,9 @@ using Xperience.Community.Rest;
 [assembly: RegisterModule(typeof(RestModule))]
 namespace Xperience.Community.Rest
 {
+    /// <summary>
+    /// An Xperience by Kentico <see cref="Module"/> which installs the REST module and related objects at startup.
+    /// </summary>
     public class RestModule : Module
     {
         public RestModule() : base(nameof(RestModule))

@@ -1,5 +1,8 @@
 ﻿namespace Xperience.Community.Rest
 {
+    /// <summary>
+    /// Constants for the REST integration.
+    /// </summary>
     public static class Constants
     {
         public const string RESOURCE_NAME = "Xperience.Community.Rest";
