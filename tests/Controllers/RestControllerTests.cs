@@ -17,8 +17,8 @@ namespace Xperience.Community.Rest.Controllers
 {
     internal class RestControllerTests() : UnitTests
     {
-        private RestController controller;
-        private ISettingsService settings;
+        private RestController? controller;
+        private readonly ISettingsService settings = Substitute.For<ISettingsService>();
 
 
         private static IEnumerable<string> RegisteredTypes => ObjectTypeManager.RegisteredTypes.Select(t => t.ObjectType.ToLower());
@@ -27,7 +27,6 @@ namespace Xperience.Community.Rest.Controllers
         [SetUp]
         public void SetUp()
         {
-            settings = Substitute.For<ISettingsService>();
             settings[Constants.SETTINGS_KEY_ENABLED].Returns("true");
             settings[Constants.SETTINGS_KEY_ALLOWEDTYPES].Returns(string.Empty);
 
@@ -61,7 +60,7 @@ namespace Xperience.Community.Rest.Controllers
         {
             settings[Constants.SETTINGS_KEY_ENABLED].Returns(isEnabled.ToString());
 
-            var actionResult = controller.Index();
+            var actionResult = controller!.Index();
             var okObjectResult = actionResult.Result as OkObjectResult;
             var indexResponse = okObjectResult?.Value as IndexResponse;
 
@@ -79,7 +78,7 @@ namespace Xperience.Community.Rest.Controllers
         {
             settings[Constants.SETTINGS_KEY_ALLOWEDTYPES].Returns(types);
 
-            var actionResult = controller.Index();
+            var actionResult = controller!.Index();
             var okObjectResult = actionResult.Result as OkObjectResult;
             var indexResponse = okObjectResult?.Value as IndexResponse;
 
@@ -96,7 +95,7 @@ namespace Xperience.Community.Rest.Controllers
         {
             settings[Constants.SETTINGS_KEY_ALLOWEDTYPES].Returns("om.contact;cms.user;invalid.type");
 
-            var actionResult = controller.Index();
+            var actionResult = controller!.Index();
             var okObjectResult = actionResult.Result as OkObjectResult;
             var indexResponse = okObjectResult?.Value as IndexResponse;
 
@@ -116,14 +115,14 @@ namespace Xperience.Community.Rest.Controllers
         {
             settings[Constants.SETTINGS_KEY_ENABLED].Returns("false");
 
-            Assert.Throws<InvalidOperationException>(() => controller.Get(UserInfo.OBJECT_TYPE, 1), "REST service disabled.");
+            Assert.Throws<InvalidOperationException>(() => controller?.Get(UserInfo.OBJECT_TYPE, 1), "REST service disabled.");
         }
 
 
         [Test]
         public void Get_All_ReturnsAllObjects()
         {
-            var actionResult = controller.Get(UserInfo.OBJECT_TYPE, null, null, null, null, null, null);
+            var actionResult = controller!.Get(UserInfo.OBJECT_TYPE, null, null, null, null, null, null);
             var okObjectResult = actionResult.Result as OkObjectResult;
             var getAllResponse = okObjectResult?.Value as GetAllResponse;
 
@@ -143,7 +142,7 @@ namespace Xperience.Community.Rest.Controllers
             string where = $"{nameof(UserInfo.FirstName)} IN ('UserA', 'UserB')";
             string orderBy = $"{nameof(UserInfo.FirstName)} asc";
             // Note: Columns parameter cannot be tested as it requires a database connection
-            var actionResult = controller.Get(UserInfo.OBJECT_TYPE, where, null, orderBy, null, null, null);
+            var actionResult = controller!.Get(UserInfo.OBJECT_TYPE, where, null, orderBy, null, null, null);
             var okObjectResult = actionResult.Result as OkObjectResult;
             var getAllResponse = okObjectResult?.Value as GetAllResponse;
 
@@ -169,7 +168,7 @@ namespace Xperience.Community.Rest.Controllers
         [Test]
         public void Get_All_TopN_ReturnsFilteredObjects()
         {
-            var actionResult = controller.Get(UserInfo.OBJECT_TYPE, null, null, null, 2, null, null);
+            var actionResult = controller!.Get(UserInfo.OBJECT_TYPE, null, null, null, 2, null, null);
             var okObjectResult = actionResult.Result as OkObjectResult;
             var getAllResponse = okObjectResult?.Value as GetAllResponse;
 
@@ -192,7 +191,7 @@ namespace Xperience.Community.Rest.Controllers
             string host = "test.com";
             string path = "/rest/all";
             string queryString = $"?page={currentPage}&pageSize={pageSize}";
-            controller.ControllerContext = new ControllerContext(ConfigureActionContext(host, scheme, path, "GET", queryString));
+            controller!.ControllerContext = new ControllerContext(ConfigureActionContext(host, scheme, path, "GET", queryString));
 
             var actionResult = controller.Get(UserInfo.OBJECT_TYPE, null, null, null, null, pageSize, currentPage);
             var okObjectResult = actionResult.Result as OkObjectResult;
