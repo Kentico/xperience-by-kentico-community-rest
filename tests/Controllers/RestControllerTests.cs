@@ -251,9 +251,9 @@ namespace Xperience.Community.Rest.Controllers
         }
 
 
-        [TestCase("UserA")]
-        [TestCase("UserB")]
-        [TestCase("UserC")]
+        [TestCase("A")]
+        [TestCase("B")]
+        [TestCase("C")]
         public void Get_ByCodeName_ReturnsSingleObject(string codeName)
         {
             var okObjectResult = controller!.Get(UserInfo.OBJECT_TYPE, codeName) as OkObjectResult;
@@ -262,7 +262,7 @@ namespace Xperience.Community.Rest.Controllers
             Assert.Multiple(() =>
             {
                 Assert.That(returnedObject, Is.Not.Null);
-                Assert.That(returnedObject!.UserID, Is.EqualTo(codeName));
+                Assert.That(returnedObject!.UserName, Is.EqualTo(codeName));
             });
         }
 
