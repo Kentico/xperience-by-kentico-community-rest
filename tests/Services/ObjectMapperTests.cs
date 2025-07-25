@@ -7,6 +7,9 @@ using Xperience.Community.Rest.Models.Requests;
 
 namespace Xperience.Community.Rest.Services
 {
+    /// <summary>
+    /// Tests for <see cref="ObjectMapper"/>.
+    /// </summary>
     internal class ObjectMapperTests : UnitTests
     {
         private readonly ObjectMapper mapper = new();

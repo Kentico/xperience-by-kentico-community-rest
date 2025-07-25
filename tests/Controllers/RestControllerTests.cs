@@ -10,11 +10,18 @@ using Microsoft.AspNetCore.Routing;
 
 using NSubstitute;
 
+using Xperience.Community.Rest.Models.Requests;
 using Xperience.Community.Rest.Models.Responses;
 using Xperience.Community.Rest.Services;
 
 namespace Xperience.Community.Rest.Controllers
 {
+    /// <summary>
+    /// Tests for <see cref="RestController"/>.
+    /// </summary>
+    /// <remarks>
+    /// It is not possible to test <see cref="RestController.Delete(DeleteRequestBody)"/> as it appears to require a database connection.
+    /// </remarks>
     internal class RestControllerTests() : UnitTests
     {
         private RestController? controller;
@@ -53,6 +60,11 @@ namespace Xperience.Community.Rest.Controllers
                     UserName = "C",
                     FirstName = "UserC",
                     UserGUID = Guid.Parse("00000000-0000-0000-0000-000000000003")
+                },
+                new()
+                {
+                    UserID = 66,
+                    UserName = "public"
                 });
         }
 
@@ -133,8 +145,8 @@ namespace Xperience.Community.Rest.Controllers
             {
                 Assert.That(getAllResponse, Is.Not.Null);
                 Assert.That(getAllResponse!.NextUrl, Is.Null);
-                Assert.That(getAllResponse!.TotalRecords, Is.EqualTo(3));
-                Assert.That(getAllResponse!.Objects.Count(), Is.EqualTo(3));
+                Assert.That(getAllResponse!.TotalRecords, Is.EqualTo(4));
+                Assert.That(getAllResponse!.Objects.Count(), Is.EqualTo(4));
             });
         }
 
@@ -213,7 +225,7 @@ namespace Xperience.Community.Rest.Controllers
                 Assert.That(getAllResponse, Is.Not.Null);
                 Assert.That(getAllResponse!.NextUrl, Is.Not.Null);
                 Assert.That(getAllResponse!.NextUrl, Is.EqualTo(expectedNextUrl.ToString()));
-                Assert.That(getAllResponse!.TotalRecords, Is.EqualTo(3));
+                Assert.That(getAllResponse!.TotalRecords, Is.EqualTo(4));
                 Assert.That(getAllResponse!.Objects.Count(), Is.EqualTo(1));
             });
         }
@@ -263,6 +275,58 @@ namespace Xperience.Community.Rest.Controllers
             {
                 Assert.That(returnedObject, Is.Not.Null);
                 Assert.That(returnedObject!.UserName, Is.EqualTo(codeName));
+            });
+        }
+
+
+        [Test]
+        public void Post_CreatesObject()
+        {
+            string newUserName = "UserD";
+            var createBody = new CreateRequestBody
+            {
+                ObjectType = UserInfo.OBJECT_TYPE,
+                Fields =
+                {
+                    { nameof(UserInfo.UserName), newUserName },
+                }
+            };
+            var okObjectResult = controller!.Post(createBody) as OkObjectResult;
+            dynamic? returnedObject = okObjectResult?.Value;
+            var allUsers = UserInfo.Provider.Get();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(returnedObject, Is.Not.Null);
+                Assert.That(returnedObject!.UserName, Is.EqualTo(newUserName));
+                Assert.That(allUsers, Has.Count.EqualTo(5));
+            });
+        }
+
+
+        [Test]
+        public void Patch_UpdatesObject()
+        {
+            int targetId = 1;
+            string newUserName = "UPDATEDNAME";
+            var updateBody = new UpdateRequestBody
+            {
+                Id = targetId,
+                ObjectType = UserInfo.OBJECT_TYPE,
+                Fields =
+                {
+                    { nameof(UserInfo.UserName), newUserName },
+                }
+            };
+            var okObjectResult = controller!.Patch(updateBody) as OkObjectResult;
+            dynamic? returnedObject = okObjectResult?.Value;
+            var userFromProvider = UserInfo.Provider.Get(targetId);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(returnedObject, Is.Not.Null);
+                Assert.That(returnedObject!.UserName, Is.EqualTo(newUserName));
+                Assert.That(userFromProvider.UserName, Is.EqualTo(newUserName));
             });
         }
 

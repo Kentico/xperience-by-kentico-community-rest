@@ -5,6 +5,9 @@ using Xperience.Community.Rest.Models.Requests;
 
 namespace Xperience.Community.Rest.Services
 {
+    /// <summary>
+    /// Tests for <see cref="ObjectRetriever"/>.
+    /// </summary>
     internal class ObjectRetrieverTests : UnitTests
     {
         private const int USER_ID = 99;
