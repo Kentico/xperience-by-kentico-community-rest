@@ -38,18 +38,21 @@ namespace Xperience.Community.Rest.Controllers
                     UserID = 2,
                     UserName = "B",
                     FirstName = "UserB",
+                    UserGUID = Guid.Parse("00000000-0000-0000-0000-000000000002")
                 },
                 new()
                 {
                     UserID = 1,
                     UserName = "A",
                     FirstName = "UserA",
+                    UserGUID = Guid.Parse("00000000-0000-0000-0000-000000000001")
                 },
                 new()
                 {
                     UserID = 3,
                     UserName = "C",
                     FirstName = "UserC",
+                    UserGUID = Guid.Parse("00000000-0000-0000-0000-000000000003")
                 });
         }
 
@@ -212,6 +215,54 @@ namespace Xperience.Community.Rest.Controllers
                 Assert.That(getAllResponse!.NextUrl, Is.EqualTo(expectedNextUrl.ToString()));
                 Assert.That(getAllResponse!.TotalRecords, Is.EqualTo(3));
                 Assert.That(getAllResponse!.Objects.Count(), Is.EqualTo(1));
+            });
+        }
+
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        public void Get_ById_ReturnsSingleObject(int id)
+        {
+            var okObjectResult = controller!.Get(UserInfo.OBJECT_TYPE, id) as OkObjectResult;
+            dynamic? returnedObject = okObjectResult?.Value;
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(returnedObject, Is.Not.Null);
+                Assert.That(returnedObject!.UserID, Is.EqualTo(id));
+            });
+        }
+
+
+        [TestCase("00000000-0000-0000-0000-000000000001")]
+        [TestCase("00000000-0000-0000-0000-000000000002")]
+        [TestCase("00000000-0000-0000-0000-000000000003")]
+        public void Get_ByGuid_ReturnsSingleObject(string guid)
+        {
+            var okObjectResult = controller!.Get(UserInfo.OBJECT_TYPE, Guid.Parse(guid)) as OkObjectResult;
+            dynamic? returnedObject = okObjectResult?.Value;
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(returnedObject, Is.Not.Null);
+                Assert.That(returnedObject!.UserGUID, Is.EqualTo(Guid.Parse(guid)));
+            });
+        }
+
+
+        [TestCase("UserA")]
+        [TestCase("UserB")]
+        [TestCase("UserC")]
+        public void Get_ByCodeName_ReturnsSingleObject(string codeName)
+        {
+            var okObjectResult = controller!.Get(UserInfo.OBJECT_TYPE, codeName) as OkObjectResult;
+            dynamic? returnedObject = okObjectResult?.Value;
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(returnedObject, Is.Not.Null);
+                Assert.That(returnedObject!.UserID, Is.EqualTo(codeName));
             });
         }
 
