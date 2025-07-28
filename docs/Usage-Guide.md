@@ -28,6 +28,20 @@ The base `/rest` endpoint accepts the following methods:
 
 Only the data retrieval methods use varying paths.
 
+### Service information
+
+Sending a GET request to the `/rest` endpoint will display information about the REST service's [configuration](#configuring-the-rest-service). The response is formatted as an [IndexResponse](/src/Models/Responses/IndexResponse.cs), e.g.:
+
+```json
+{
+  "enabled": true,
+  "enabledObjects": ["cms.user", "om.contact"],
+  "enabledForms": ["bizform.dancinggoatcontactus"]
+}
+```
+
+This endpoint will always respond to requests, even when the service is disabled.
+
 ### Creating an object
 
 To create a new object, send a POST request to `/rest` and provide the data found in [CreateRequestBody](/src/Models/Requests/CreateRequestBody.cs):
