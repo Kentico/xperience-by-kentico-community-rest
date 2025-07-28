@@ -1,7 +1,6 @@
 ﻿using CMS.Core;
 using CMS.DataEngine;
 using CMS.Membership;
-using CMS.Tests;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,13 +21,10 @@ namespace Xperience.Community.Rest.Controllers
     /// <remarks>
     /// It is not possible to test <see cref="RestController.Delete(DeleteRequestBody)"/> as it appears to require a database connection.
     /// </remarks>
-    internal class RestControllerTests() : UnitTests
+    internal class RestControllerTests() : TestWithFakes
     {
         private RestController? controller;
         private readonly ISettingsService settings = Substitute.For<ISettingsService>();
-
-
-        private static IEnumerable<string> RegisteredTypes => ObjectTypeManager.RegisteredTypes.Select(t => t.ObjectType.ToLower());
 
 
         [SetUp]
@@ -37,35 +33,7 @@ namespace Xperience.Community.Rest.Controllers
             settings[Constants.SETTINGS_KEY_ENABLED].Returns("true");
             settings[Constants.SETTINGS_KEY_ALLOWEDTYPES].Returns(string.Empty);
 
-            controller = new RestController(new ObjectRetriever(), new ObjectMapper(), settings);
-
-            Fake<UserInfo, UserInfoProvider>().WithData(
-                new()
-                {
-                    UserID = 2,
-                    UserName = "B",
-                    FirstName = "UserB",
-                    UserGUID = Guid.Parse("00000000-0000-0000-0000-000000000002")
-                },
-                new()
-                {
-                    UserID = 1,
-                    UserName = "A",
-                    FirstName = "UserA",
-                    UserGUID = Guid.Parse("00000000-0000-0000-0000-000000000001")
-                },
-                new()
-                {
-                    UserID = 3,
-                    UserName = "C",
-                    FirstName = "UserC",
-                    UserGUID = Guid.Parse("00000000-0000-0000-0000-000000000003")
-                },
-                new()
-                {
-                    UserID = 66,
-                    UserName = "public"
-                });
+            controller = new RestController(new TypeRetriever(settings), new ObjectRetriever(), new ObjectMapper(), settings);
         }
 
 
@@ -100,7 +68,8 @@ namespace Xperience.Community.Rest.Controllers
             Assert.Multiple(() =>
             {
                 Assert.That(indexResponse, Is.Not.Null);
-                Assert.That(indexResponse!.EnabledObjectTypes, Is.EqualTo(RegisteredTypes));
+                Assert.That(indexResponse!.EnabledObjects, Is.EqualTo(OBJECT_TYPES));
+                Assert.That(indexResponse!.EnabledForms, Does.Contain(FORM_NAME));
             });
         }
 
@@ -117,10 +86,10 @@ namespace Xperience.Community.Rest.Controllers
             Assert.Multiple(() =>
             {
                 Assert.That(indexResponse, Is.Not.Null);
-                Assert.That(indexResponse!.EnabledObjectTypes.Count(), Is.EqualTo(2));
-                Assert.That(indexResponse!.EnabledObjectTypes, Does.Contain("cms.user"));
-                Assert.That(indexResponse!.EnabledObjectTypes, Does.Contain("om.contact"));
-                Assert.That(indexResponse!.EnabledObjectTypes, Does.Not.Contain("invalid.type"));
+                Assert.That(indexResponse!.EnabledObjects.Count(), Is.EqualTo(2));
+                Assert.That(indexResponse!.EnabledObjects, Does.Contain("cms.user"));
+                Assert.That(indexResponse!.EnabledObjects, Does.Contain("om.contact"));
+                Assert.That(indexResponse!.EnabledObjects, Does.Not.Contain("invalid.type"));
             });
         }
 

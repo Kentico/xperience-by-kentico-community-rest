@@ -1,7 +1,6 @@
 ﻿using System.Data;
 
 using CMS.ContactManagement;
-using CMS.Tests;
 
 using Xperience.Community.Rest.Models.Requests;
 
@@ -10,15 +9,11 @@ namespace Xperience.Community.Rest.Services
     /// <summary>
     /// Tests for <see cref="ObjectMapper"/>.
     /// </summary>
-    internal class ObjectMapperTests : UnitTests
+    internal class ObjectMapperTests : TestWithFakes
     {
         private readonly ObjectMapper mapper = new();
         private const string CONTACT_FIRSTNAME = "Tester";
         private const string CONTACT_EMAIL = "test@localhost.com";
-
-
-        [SetUp]
-        public void SetUp() => Fake<ContactInfo, ContactInfoProvider>();
 
 
         [Test]

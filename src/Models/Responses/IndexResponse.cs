@@ -14,6 +14,12 @@
         /// <summary>
         /// A list of objects allowed to be managed by the REST service.
         /// </summary>
-        public IEnumerable<string> EnabledObjectTypes { get; set; } = [];
+        public IEnumerable<string> EnabledObjects { get; set; } = [];
+
+
+        /// <summary>
+        /// A list of forms allowed to be managed by the REST service.
+        /// </summary>
+        public IEnumerable<string> EnabledForms { get; set; } = [];
     }
 }

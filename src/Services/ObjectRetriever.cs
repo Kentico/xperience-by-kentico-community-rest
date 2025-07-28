@@ -2,6 +2,8 @@
 
 using CMS;
 using CMS.DataEngine;
+using CMS.DataEngine.Internal;
+using CMS.OnlineForms;
 
 using Xperience.Community.Rest.Models;
 using Xperience.Community.Rest.Models.Requests;
@@ -39,6 +41,11 @@ namespace Xperience.Community.Rest.Services
         }
 
 
+        public BaseInfo GetNewObject(string objectType) => IsForm(objectType)
+                ? BizFormItem.New(objectType)
+                : ModuleManager.GetObject(objectType, true);
+
+
         public BaseInfo? GetExistingObject<TBody>(TBody body) where TBody : BaseRequestBody, IRequestBodyWithIdentifiers
         {
             if (!string.IsNullOrEmpty(body.CodeName))
@@ -60,33 +67,21 @@ namespace Xperience.Community.Rest.Services
         }
 
 
-        public BaseInfo? GetById(string objectType, int id)
+        public BaseInfo? GetById(string objectType, int id) =>
+            GetNewObject(objectType).TypeInfo.ProviderObject.GetInfoById(id);
+
+
+        public BaseInfo? GetByCodeName(string objectType, string codeName) =>
+            GetNewObject(objectType).TypeInfo.ProviderObject.GetInfoByName(codeName);
+
+
+        public BaseInfo? GetByGuid(string objectType, Guid guid) =>
+            GetNewObject(objectType).TypeInfo.ProviderObject.GetInfoByGuid(guid);
+
+
+        private IDataQuery GetQuery(GetAllSettings settings)
         {
-            var typeInfo = ObjectTypeManager.GetTypeInfo(objectType, true);
-
-            return typeInfo.ProviderObject.GetInfoById(id);
-        }
-
-
-        public BaseInfo? GetByCodeName(string objectType, string codeName)
-        {
-            var typeInfo = ObjectTypeManager.GetTypeInfo(objectType, true);
-
-            return typeInfo.ProviderObject.GetInfoByName(codeName);
-        }
-
-
-        public BaseInfo? GetByGuid(string objectType, Guid guid)
-        {
-            var typeInfo = ObjectTypeManager.GetTypeInfo(objectType, true);
-
-            return typeInfo.ProviderObject.GetInfoByGuid(guid);
-        }
-
-
-        private static IDataQuery GetQuery(GetAllSettings settings)
-        {
-            GeneralizedInfo info = ModuleManager.GetObject(settings.ObjectType);
+            GeneralizedInfo info = GetNewObject(settings.ObjectType);
             string? orderBy = settings.OrderBy;
             if (!string.IsNullOrEmpty(orderBy) && orderBy.Equals("##default##", StringComparison.OrdinalIgnoreCase))
             {
@@ -121,5 +116,8 @@ namespace Xperience.Community.Rest.Services
 
             return query;
         }
+
+
+        private static bool IsForm(string objectType) => DataClassInfoProvider.GetDataClassInfo(objectType).IsForm();
     }
 }

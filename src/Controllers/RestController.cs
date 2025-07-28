@@ -1,7 +1,6 @@
 ﻿using System.Web;
 
 using CMS.Core;
-using CMS.DataEngine;
 using CMS.Helpers;
 
 using Microsoft.AspNetCore.Http.Extensions;
@@ -21,36 +20,16 @@ namespace Xperience.Community.Rest.Controllers
     [ApiController]
     [Route("rest")]
     [RestAuthentication]
-    public class RestController(IObjectRetriever objectRetriever, IObjectMapper mapper, ISettingsService settingsService) : ControllerBase
+    public class RestController(
+        ITypeRetriever typeRetriever,
+        IObjectRetriever objectRetriever,
+        IObjectMapper mapper,
+        ISettingsService settingsService) : ControllerBase
     {
         /// <summary>
         /// If <c>true</c>, the REST service is enabled.
         /// </summary>
         private bool IsEnabled => ValidationHelper.GetBoolean(settingsService[Constants.SETTINGS_KEY_ENABLED], false);
-
-
-        /// <summary>
-        /// A list of object types registered in Xperience by Kentico, lowercased.
-        /// </summary>
-        private static IEnumerable<string> RegisteredTypes => ObjectTypeManager.RegisteredTypes.Select(t => t.ObjectType.ToLower());
-
-
-        /// <summary>
-        /// A list of objects allowed to be managed by the REST service, lowercased.
-        /// </summary>
-        private IEnumerable<string> EnabledTypes
-        {
-            get
-            {
-                string? types = settingsService[Constants.SETTINGS_KEY_ALLOWEDTYPES];
-                if (string.IsNullOrEmpty(types))
-                {
-                    return RegisteredTypes;
-                }
-
-                return types.ToLower().Split(';');
-            }
-        }
 
 
         /// <summary>
@@ -61,7 +40,8 @@ namespace Xperience.Community.Rest.Controllers
             Ok(new IndexResponse
             {
                 Enabled = IsEnabled,
-                EnabledObjectTypes = RegisteredTypes.Intersect(EnabledTypes)
+                EnabledObjects = typeRetriever.GetAllowedObjects(),
+                EnabledForms = typeRetriever.GetAllowedForms()
             });
 
 
@@ -193,7 +173,7 @@ namespace Xperience.Community.Rest.Controllers
         public IActionResult Post([FromBody] CreateRequestBody body)
         {
             ValidateRequestOrThrow(body.ObjectType);
-            var newObject = ModuleManager.GetObject(body.ObjectType, true);
+            var newObject = objectRetriever.GetNewObject(body.ObjectType);
             mapper.MapFieldsFromRequest(newObject, body);
             newObject.Insert();
 
@@ -255,16 +235,11 @@ namespace Xperience.Community.Rest.Controllers
                 throw new InvalidOperationException("REST service disabled.");
             }
 
-            string normalizedObjectType = objectType.ToLower();
-
-            // Ensure type is registered
-            _ = ObjectTypeManager.GetTypeInfo(normalizedObjectType) ??
-                throw new InvalidOperationException($"Object type '{normalizedObjectType}' not registered.");
-
             // Ensure type is allowed in settings
-            if (!EnabledTypes.Contains(normalizedObjectType))
+            if (!typeRetriever.GetAllowedForms().Contains(objectType, StringComparer.InvariantCultureIgnoreCase) &&
+                !typeRetriever.GetAllowedObjects().Contains(objectType, StringComparer.InvariantCultureIgnoreCase))
             {
-                throw new InvalidOperationException($"Object type '{normalizedObjectType}' not enabled by REST service.");
+                throw new InvalidOperationException($"Object type '{objectType}' not enabled by REST service.");
             }
         }
     }

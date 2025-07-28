@@ -49,5 +49,12 @@ namespace Xperience.Community.Rest.Services
         /// <param name="objectType">The object type to retrieve.</param>
         /// <param name="guid">The GUID of the object to retrieve.</param>
         public BaseInfo? GetByGuid(string objectType, Guid guid);
+
+
+        /// <summary>
+        /// Instantiates and returns a new object of the given type.
+        /// </summary>
+        /// <param name="objectType">The object type to retrieve.</param>
+        public BaseInfo GetNewObject(string objectType);
     }
 }
