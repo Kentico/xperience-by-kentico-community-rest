@@ -39,7 +39,7 @@ Displays information about the REST service's [configuration](#configuring-the-r
 
 Sample response:
 
-```json
+```js
 {
   "enabled": true,
   "enabledObjects": ["cms.user", "om.contact"],
@@ -60,7 +60,7 @@ Gets metadata about the object type and available fields.
 
 Sample request and response:
 
-```json
+```js
 // http://localhost/rest/metadata/bizform.dancinggoatcontactus
 {
   "objectType": "bizform.dancinggoatcontactus",
@@ -109,7 +109,7 @@ Creates a new object determined by the request body:
 
 Sample payload:
 
-```json
+```js
 {
     "ObjectType": "om.contact",
     "Fields": [
@@ -140,7 +140,7 @@ Partially updates an object determined by the request body:
 
 Sample payload:
 
-```json
+```js
 {
     "ObjectType": "om.contact",
     "Id": 4,
@@ -170,7 +170,7 @@ Deletes an object determined by the request body:
 
 Sample payload:
 
-```json
+```js
 {
   "ObjectType": "cms.user",
   "CodeName": "andy"
@@ -193,7 +193,7 @@ Gets a single object by ID, code name, or GUID.
 
 Sample request and response:
 
-```json
+```js
 // http://localhost/rest/cms.user/42
 {
   "UserID": 42,
@@ -224,7 +224,7 @@ Gets a list of objects. The following _optional_ query string parameters can be 
 
 Sample requests and responses:
 
-```json
+```js
 // http://localhost/rest/om.contact/all
 {
   "totalRecords": 300,
@@ -245,7 +245,7 @@ Sample requests and responses:
 }
 ```
 
-```json
+```js
 // http://localhost/rest/om.contact/all?where=contactemail is not null&columns=contactemail&orderby=contactemail
 {
   "totalRecords": 300,
@@ -268,7 +268,7 @@ To paginate the results of a GET request, add the **Page** and **PageSize** quer
 
 Sample request and response:
 
-```json
+```js
 // http://localhost/rest/cms.webpageurlpath/all?page=2&pagesize=5&columns=WebPageUrlPath
 {
   "totalRecords": 110,
