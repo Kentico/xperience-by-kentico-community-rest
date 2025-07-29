@@ -32,7 +32,8 @@ namespace Xperience.Community.Rest.Controllers
             settings[Constants.SETTINGS_KEY_ENABLED].Returns("true");
             settings[Constants.SETTINGS_KEY_ALLOWEDTYPES].Returns(string.Empty);
 
-            controller = new RestController(new TypeRetriever(settings), new ObjectRetriever(), new ObjectMapper(), settings);
+            var objectRetriever = new ObjectRetriever();
+            controller = new RestController(new TypeRetriever(settings, objectRetriever), objectRetriever, new ObjectMapper(), settings);
         }
 
 
@@ -94,18 +95,36 @@ namespace Xperience.Community.Rest.Controllers
 
 
         [Test]
-        public void Get_ServiceDisabled_Throws()
+        public void Get_Metadata_ReturnsObjectMetadata()
         {
-            settings[Constants.SETTINGS_KEY_ENABLED].Returns("false");
+            var actionResult = controller!.GetMetadata(UserInfo.OBJECT_TYPE);
+            var objectMeta = actionResult?.Value;
 
-            Assert.Throws<InvalidOperationException>(() => controller?.Get(UserInfo.OBJECT_TYPE, 1), "REST service disabled.");
+            Assert.Multiple(() =>
+            {
+                Assert.That(objectMeta, Is.Not.Null);
+                Assert.That(objectMeta!.ObjectType, Is.EqualTo(UserInfo.OBJECT_TYPE));
+                Assert.That(objectMeta!.Fields.Count(), Is.EqualTo(4));
+                Assert.That(objectMeta!.IdColumn, Is.EqualTo(nameof(UserInfo.UserID)));
+                Assert.That(objectMeta!.GuidColumn, Is.EqualTo(nameof(UserInfo.UserGUID)));
+                Assert.That(objectMeta!.CodeNameColumn, Is.EqualTo(nameof(UserInfo.UserName)));
+            });
         }
 
 
         [Test]
-        public void Get_All_ReturnsAllObjects()
+        public void Get_ServiceDisabled_Throws()
         {
-            var actionResult = controller!.Get(UserInfo.OBJECT_TYPE, null, null, null, null, null, null);
+            settings[Constants.SETTINGS_KEY_ENABLED].Returns("false");
+
+            Assert.Throws<InvalidOperationException>(() => controller?.GetById(UserInfo.OBJECT_TYPE, 1), "REST service disabled.");
+        }
+
+
+        [Test]
+        public void GetAll_ReturnsAllObjects()
+        {
+            var actionResult = controller!.GetAll(UserInfo.OBJECT_TYPE, null, null, null, null, null, null);
             var okObjectResult = actionResult.Result as OkObjectResult;
             var getAllResponse = okObjectResult?.Value as GetAllResponse;
 
@@ -120,12 +139,12 @@ namespace Xperience.Community.Rest.Controllers
 
 
         [Test]
-        public void Get_All_WhereAndOrder_ReturnsFilteredObjects()
+        public void GetAll_WhereAndOrder_ReturnsFilteredObjects()
         {
             string where = $"{nameof(UserInfo.FirstName)} IN ('UserA', 'UserB')";
             string orderBy = $"{nameof(UserInfo.FirstName)} asc";
             // Note: Columns parameter cannot be tested as it requires a database connection
-            var actionResult = controller!.Get(UserInfo.OBJECT_TYPE, where, null, orderBy, null, null, null);
+            var actionResult = controller!.GetAll(UserInfo.OBJECT_TYPE, where, null, orderBy, null, null, null);
             var okObjectResult = actionResult.Result as OkObjectResult;
             var getAllResponse = okObjectResult?.Value as GetAllResponse;
 
@@ -149,9 +168,9 @@ namespace Xperience.Community.Rest.Controllers
 
 
         [Test]
-        public void Get_All_TopN_ReturnsFilteredObjects()
+        public void GetAll_TopN_ReturnsFilteredObjects()
         {
-            var actionResult = controller!.Get(UserInfo.OBJECT_TYPE, null, null, null, 2, null, null);
+            var actionResult = controller!.GetAll(UserInfo.OBJECT_TYPE, null, null, null, 2, null, null);
             var okObjectResult = actionResult.Result as OkObjectResult;
             var getAllResponse = okObjectResult?.Value as GetAllResponse;
 
@@ -166,7 +185,7 @@ namespace Xperience.Community.Rest.Controllers
 
 
         [Test]
-        public void Get_All_Paging_ReturnsPagedObjects()
+        public void GetAll_Paging_ReturnsPagedObjects()
         {
             int pageSize = 1;
             int currentPage = 0;
@@ -176,7 +195,7 @@ namespace Xperience.Community.Rest.Controllers
             string queryString = $"?page={currentPage}&pageSize={pageSize}";
             controller!.ControllerContext = new ControllerContext(ConfigureActionContext(host, scheme, path, "GET", queryString));
 
-            var actionResult = controller.Get(UserInfo.OBJECT_TYPE, null, null, null, null, pageSize, currentPage);
+            var actionResult = controller.GetAll(UserInfo.OBJECT_TYPE, null, null, null, null, pageSize, currentPage);
             var okObjectResult = actionResult.Result as OkObjectResult;
             var getAllResponse = okObjectResult?.Value as GetAllResponse;
             var expectedNextUrl = new UriBuilder
@@ -202,9 +221,9 @@ namespace Xperience.Community.Rest.Controllers
         [TestCase(1)]
         [TestCase(2)]
         [TestCase(3)]
-        public void Get_ById_ReturnsSingleObject(int id)
+        public void GetById_ReturnsSingleObject(int id)
         {
-            var okObjectResult = controller!.Get(UserInfo.OBJECT_TYPE, id) as OkObjectResult;
+            var okObjectResult = controller!.GetById(UserInfo.OBJECT_TYPE, id) as OkObjectResult;
             dynamic? returnedObject = okObjectResult?.Value;
 
             Assert.Multiple(() =>
@@ -218,9 +237,9 @@ namespace Xperience.Community.Rest.Controllers
         [TestCase("00000000-0000-0000-0000-000000000001")]
         [TestCase("00000000-0000-0000-0000-000000000002")]
         [TestCase("00000000-0000-0000-0000-000000000003")]
-        public void Get_ByGuid_ReturnsSingleObject(string guid)
+        public void GetByGuid_ReturnsSingleObject(string guid)
         {
-            var okObjectResult = controller!.Get(UserInfo.OBJECT_TYPE, Guid.Parse(guid)) as OkObjectResult;
+            var okObjectResult = controller!.GetByGuid(UserInfo.OBJECT_TYPE, Guid.Parse(guid)) as OkObjectResult;
             dynamic? returnedObject = okObjectResult?.Value;
 
             Assert.Multiple(() =>
@@ -234,9 +253,9 @@ namespace Xperience.Community.Rest.Controllers
         [TestCase("A")]
         [TestCase("B")]
         [TestCase("C")]
-        public void Get_ByCodeName_ReturnsSingleObject(string codeName)
+        public void GetByCodeName_ReturnsSingleObject(string codeName)
         {
-            var okObjectResult = controller!.Get(UserInfo.OBJECT_TYPE, codeName) as OkObjectResult;
+            var okObjectResult = controller!.GetByCodeName(UserInfo.OBJECT_TYPE, codeName) as OkObjectResult;
             dynamic? returnedObject = okObjectResult?.Value;
 
             Assert.Multiple(() =>

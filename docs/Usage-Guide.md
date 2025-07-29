@@ -19,18 +19,25 @@ If you are testing the REST service with a client such as Postman, you should be
 
 ## Endpoints
 
-The base `/rest` endpoint accepts the following methods:
+The `/rest` endpoint accepts the following methods:
 
-- GET: Displays information about the REST service
-- POST: Creates a new object
-- PATCH: Partially updates an object
-- DELETE: Deletes an object
-
-Only the data retrieval methods use varying paths.
+- GET: Gets [service information](#service-information), [metadata](#getting-metadata), and [single](#getting-a-single-object) or [multiple objects](#getting-multiple-objects)
+- POST: [Creates](#creating-an-object) a new object
+- PATCH: Partially [updates](#updating-an-object) an object
+- DELETE: [Deletes](#deleting-an-object) an object
 
 ### Service information
 
-Sending a GET request to the `/rest` endpoint will display information about the REST service's [configuration](#configuring-the-rest-service). The response is formatted as an [IndexResponse](/src/Models/Responses/IndexResponse.cs), e.g.:
+> [!TIP]
+>
+> - **Method**: GET
+> - **Path**: /rest
+> - **Request body**: (none)
+> - **Response body**: [IndexResponse](/src/Models/Responses/IndexResponse.cs)
+
+Displays information about the REST service's [configuration](#configuring-the-rest-service). This endpoint will always respond to requests, even when the service is disabled.
+
+Sample response:
 
 ```json
 {
@@ -40,11 +47,62 @@ Sending a GET request to the `/rest` endpoint will display information about the
 }
 ```
 
-This endpoint will always respond to requests, even when the service is disabled.
+### Getting metadata
+
+> [!TIP]
+>
+> - **Method**: GET
+> - **Path**: /rest/metadata/[objectType]
+> - **Request body**: (none)
+> - **Response body**: [ObjectMeta](/src/Models/ObjectMeta.cs)
+
+Gets metadata about the object type and available fields.
+
+Sample request and response:
+
+```json
+// http://localhost/rest/metadata/bizform.dancinggoatcontactus
+{
+  "objectType": "bizform.dancinggoatcontactus",
+  "displayName": "Contact Us",
+  "codeNameColumn": null,
+  "idColumn": "Form_2023_09_12_17_45ID",
+  "guidColumn": null,
+  "classType": "Form",
+  "fields": [
+    {
+      "name": "Form_2023_09_12_17_45ID",
+      "caption": null,
+      "isRequired": true,
+      "isUnique": false,
+      "size": 0,
+      "dataType": "integer",
+      "defaultValue": null
+    },
+    {
+      "name": "UserMessage",
+      "caption": "Message",
+      "isRequired": true,
+      "isUnique": false,
+      "size": 0,
+      "dataType": "longtext",
+      "defaultValue": null
+    }
+    // Other fields...
+  ]
+}
+```
 
 ### Creating an object
 
-To create a new object, send a POST request to `/rest` and provide the data found in [CreateRequestBody](/src/Models/Requests/CreateRequestBody.cs):
+> [!TIP]
+>
+> - **Method**: POST
+> - **Path**: /rest
+> - **Request body**: [CreateRequestBody](/src/Models/Requests/CreateRequestBody.cs)
+> - **Response body**: (an object containing fields of the created object)
+
+Creates a new object determined by the request body:
 
 - ObjectType: The name of the object type to create, e.g. "om.contact"
 - Fields: An array of the object's field names and values. Be sure to provide values for any required fields of the object type, or the request will fail
@@ -62,13 +120,18 @@ Sample payload:
 }
 ```
 
-The response of this request contains the full representation of the created object.
-
 ### Updating an object
 
-To update an object, send a PATCH request to `/rest` and provide the data found in [UpdateRequestBody](/src/Models/Requests/UpdateRequestBody.cs):
+> [!TIP]
+>
+> - **Method**: PATCH
+> - **Path**: /rest
+> - **Request body**: [UpdateRequestBody](/src/Models/Requests/UpdateRequestBody.cs)
+> - **Response body**: (an object containing fields of the updated object)
 
-- ObjectType: The name of the object type to create, e.g. "om.contact"
+Partially updates an object determined by the request body:
+
+- ObjectType: The name of the object type to update, e.g. "om.contact"
 - Fields: An array of the object's field names and values. Only fields provided here are updated- other fields of the object are untouched
 - One of the following properties which identifies the object to update:
   - Id
@@ -88,11 +151,16 @@ Sample payload:
 }
 ```
 
-The response of this request contains the full representation of the updated object.
-
 ### Deleting an object
 
-To delete an object, send a DELETE request to `/rest` and provide the data found in [DeleteRequestBody](/src/Models/Requests/DeleteRequestBody.cs):
+> [!TIP]
+>
+> - **Method**: DELETE
+> - **Path**: /rest
+> - **Request body**: [DeleteRequestBody](/src/Models/Requests/DeleteRequestBody.cs)
+> - **Response body**: (an object containing fields of the deleted object)
+
+Deletes an object determined by the request body:
 
 - ObjectType: The name of the object type to delete, e.g. "om.contact"
 - One of the following properties which identifies the object to delete:
@@ -109,30 +177,41 @@ Sample payload:
 }
 ```
 
-The response of this request contains the full representation of the deleted object.
-
 ### Getting a single object
 
-You can retrieve a single object by sending a GET request to one of the following endpoints:
+> [!TIP]
+>
+> - **Method**: GET
+> - **Path**:
+>   - /rest/[objectType]/[id]
+>   - /rest/[objectType]/[guid]
+>   - /rest/[objectType]/[codeName]
+> - **Request body**: (none)
+> - **Response body**: (an object containing fields of the retrieved object)
 
-| Path                          | Description                 | Example                                             |
-| ----------------------------- | --------------------------- | --------------------------------------------------- |
-| /rest/[objectType]/[id]       | Gets an object by ID        | /rest/om.contact/4                                  |
-| /rest/[objectType]/[guid]     | Gets an object by GUID      | /rest/cms.user/3381ccd3-43d8-4e6c-9180-115a61eb5ae4 |
-| /rest/[objectType]/[codeName] | Gets an object by code name | /rest/cms.user/andy                                 |
+Gets a single object by ID, code name, or GUID.
 
-The response body is the representation of the object's fields and values, e.g.:
+Sample request and response:
 
 ```json
+// http://localhost/rest/cms.user/42
 {
   "UserID": 42,
   "UserName": "andy"
+  // Other fields...
 }
 ```
 
 ### Getting multiple objects
 
-A list of objects can be retrieved by sending a GET request to the `/rest/[objectType]/all` endpoint. The following _optional_ query string parameters can be provided to further configure the data retrieval:
+> [!TIP]
+>
+> - **Method**: GET
+> - **Path**: /rest/[objectType]/all
+> - **Request body**: (none)
+> - **Response body**: [GetAllResponse](/src/Models/Responses/GetAllResponse.cs)
+
+Gets a list of objects. The following _optional_ query string parameters can be provided to further configure the data retrieval:
 
 | Parameter | Description                                                                              | Example                               |
 | --------- | ---------------------------------------------------------------------------------------- | ------------------------------------- |
@@ -142,12 +221,6 @@ A list of objects can be retrieved by sending a GET request to the `/rest/[objec
 | TopN      | The number of objects to retrieve                                                        | topn=20                               |
 | PageSize  | The number of objects per page                                                           | pagesize=5                            |
 | Page      | The page to retrieve, where 0 is the first page                                          | page=2                                |
-
-The response of this request matches the format of [GetAllResponse](/src/Models/Responses/GetAllResponse.cs):
-
-- TotalRecords: The number of total records returned by the query
-- Objects: The list of retrieved objects
-- NextUrl: When [paging results](#paging-results), this property will contain the absolute URL of the next page of objects if there are more results
 
 Sample requests and responses:
 

@@ -46,6 +46,20 @@ namespace Xperience.Community.Rest.Controllers
 
 
         /// <summary>
+        /// An action which returns metadata for an object type.
+        /// </summary>
+        /// <param name="objectType">The object type to retrieve metadata for.</param>
+        [HttpGet]
+        [Route("metadata/{objectType}")]
+        public ActionResult<ObjectMeta> GetMetadata(string objectType)
+        {
+            ValidateRequestOrThrow(objectType);
+
+            return typeRetriever.GetMetadata(objectType);
+        }
+
+
+        /// <summary>
         /// An action which returns multiple objects and supports pagination.
         /// </summary>
         /// <param name="objectType">The object type to retrieve.</param>
@@ -58,7 +72,7 @@ namespace Xperience.Community.Rest.Controllers
         /// <exception cref="InvalidOperationException"></exception>
         [HttpGet]
         [Route("{objectType}/all")]
-        public ActionResult<GetAllResponse> Get(
+        public ActionResult<GetAllResponse> GetAll(
             string objectType,
             [FromQuery] string? where,
             [FromQuery] string? columns,
@@ -112,7 +126,7 @@ namespace Xperience.Community.Rest.Controllers
         /// <param name="id">The primary key of the desired object.</param>
         [HttpGet]
         [Route("{objectType}/{id:int}")]
-        public IActionResult Get(string objectType, int id)
+        public IActionResult GetById(string objectType, int id)
         {
             ValidateRequestOrThrow(objectType);
             var obj = objectRetriever.GetById(objectType, id);
@@ -132,7 +146,7 @@ namespace Xperience.Community.Rest.Controllers
         /// <param name="codeName">The code name of the desired object.</param>
         [HttpGet]
         [Route("{objectType}/{codeName}")]
-        public IActionResult Get(string objectType, string codeName)
+        public IActionResult GetByCodeName(string objectType, string codeName)
         {
             ValidateRequestOrThrow(objectType);
             var obj = objectRetriever.GetByCodeName(objectType, codeName);
@@ -152,7 +166,7 @@ namespace Xperience.Community.Rest.Controllers
         /// <param name="guid">The GUID of the desired object.</param>
         [HttpGet]
         [Route("{objectType}/{guid:guid}")]
-        public IActionResult Get(string objectType, Guid guid)
+        public IActionResult GetByGuid(string objectType, Guid guid)
         {
             ValidateRequestOrThrow(objectType);
             var obj = objectRetriever.GetByGuid(objectType, guid);

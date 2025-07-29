@@ -16,7 +16,7 @@ namespace Xperience.Community.Rest.Services
         public void SetUp()
         {
             settings = Substitute.For<ISettingsService>();
-            typeRetriever = new TypeRetriever(settings);
+            typeRetriever = new TypeRetriever(settings, new ObjectRetriever());
         }
 
 
@@ -79,6 +79,23 @@ namespace Xperience.Community.Rest.Services
                 Assert.That(allowedForms.Count(), Is.EqualTo(1));
                 Assert.That(allowedForms, Does.Contain(UserInfo.OBJECT_TYPE));
                 Assert.That(allowedForms, Does.Not.Contain(ContactInfo.OBJECT_TYPE));
+            });
+        }
+
+
+        [Test]
+        public void GetMetadata_ReturnsMetadata()
+        {
+            var objectMeta = typeRetriever!.GetMetadata(UserInfo.OBJECT_TYPE);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(objectMeta, Is.Not.Null);
+                Assert.That(objectMeta!.ObjectType, Is.EqualTo(UserInfo.OBJECT_TYPE));
+                Assert.That(objectMeta!.Fields.Count(), Is.EqualTo(4));
+                Assert.That(objectMeta!.IdColumn, Is.EqualTo(nameof(UserInfo.UserID)));
+                Assert.That(objectMeta!.GuidColumn, Is.EqualTo(nameof(UserInfo.UserGUID)));
+                Assert.That(objectMeta!.CodeNameColumn, Is.EqualTo(nameof(UserInfo.UserName)));
             });
         }
     }

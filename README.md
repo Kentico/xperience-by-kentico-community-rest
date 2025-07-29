@@ -20,7 +20,6 @@ The following features are currently _not implemented_, though this may change i
 
 - Managing web pages and content items
 - Uploading binary assets
-- Retrieving object type metadata (field names, types, etc.)
 
 ## :gear: Package Installation
 
