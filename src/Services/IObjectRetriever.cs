@@ -24,7 +24,7 @@ namespace Xperience.Community.Rest.Services
         /// Gets a single object determined by the provided indentifier in <paramref name="body"/>.
         /// </summary>
         /// <param name="body">The request body which contains at least one valid identifier.</param>
-        public BaseInfo? GetExistingObject<TBody>(TBody body) where TBody : BaseRequestBody, IRequestBodyWithIdentifiers;
+        public BaseInfo? GetExistingObject<TBody>(TBody body) where TBody : IRequestBodyWithObjectType, IRequestBodyWithIdentifiers;
 
 
         /// <summary>

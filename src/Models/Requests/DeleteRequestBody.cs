@@ -3,7 +3,7 @@
     /// <summary>
     /// The request body used when deleting an object via the REST service.
     /// </summary>
-    public class DeleteRequestBody : BaseRequestBody, IRequestBodyWithIdentifiers
+    public class DeleteRequestBody : IRequestBodyWithObjectType, IRequestBodyWithIdentifiers
     {
         public int? Id { get; set; }
 
@@ -12,5 +12,8 @@
 
 
         public Guid? Guid { get; set; }
+
+
+        public required string ObjectType { get; set; }
     }
 }

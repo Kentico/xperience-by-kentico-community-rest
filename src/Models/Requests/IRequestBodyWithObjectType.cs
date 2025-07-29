@@ -1,13 +1,13 @@
 ﻿namespace Xperience.Community.Rest.Models.Requests
 {
     /// <summary>
-    /// The base request body used in any REST request.
+    /// Represents a request body containing an object type.
     /// </summary>
-    public class BaseRequestBody
+    public interface IRequestBodyWithObjectType
     {
         /// <summary>
         /// The requested object type.
         /// </summary>
-        public required string ObjectType { get; set; }
+        public string ObjectType { get; set; }
     }
 }

@@ -5,7 +5,7 @@ namespace Xperience.Community.Rest.Models.Requests
     /// <summary>
     /// The request body used when updating an existing object via the REST service.
     /// </summary>
-    public class UpdateRequestBody : BaseRequestBody, IRequestBodyWithIdentifiers, IRequestBodyWithFields
+    public class UpdateRequestBody : IRequestBodyWithObjectType, IRequestBodyWithIdentifiers, IRequestBodyWithFields
     {
         public int? Id { get; set; }
 
@@ -17,5 +17,8 @@ namespace Xperience.Community.Rest.Models.Requests
 
 
         public JsonObject Fields { get; set; } = [];
+
+
+        public required string ObjectType { get; set; }
     }
 }

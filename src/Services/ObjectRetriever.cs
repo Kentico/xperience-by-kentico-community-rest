@@ -46,7 +46,7 @@ namespace Xperience.Community.Rest.Services
                 : ModuleManager.GetObject(objectType, true);
 
 
-        public BaseInfo? GetExistingObject<TBody>(TBody body) where TBody : BaseRequestBody, IRequestBodyWithIdentifiers
+        public BaseInfo? GetExistingObject<TBody>(TBody body) where TBody : IRequestBodyWithObjectType, IRequestBodyWithIdentifiers
         {
             if (!string.IsNullOrEmpty(body.CodeName))
             {
