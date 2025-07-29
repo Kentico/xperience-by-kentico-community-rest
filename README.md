@@ -14,6 +14,14 @@ This integration adds endpoints to your Xperience by Kentico website allowing fo
 | ----------------- | --------------- |
 | >= 30.0.0         | >= 1.0.0        |
 
+## Limitations
+
+The following features are currently _not implemented_, though this may change in future releases:
+
+- Managing web pages and content items
+- Uploading binary assets
+- Retrieving object type metadata (field names, types, etc.)
+
 ## :gear: Package Installation
 
 Add the package to your application using the .NET CLI
